@@ -331,6 +331,17 @@ func (h Header) writeSubset(w io.Writer, exclude map[string]bool, trace *httptra
 	headerSorterPool.Put(sorter)
 	return nil
 }
+var skipCanonicalMap = map[string]bool{
+	"x-aos-ui-fetch-call-1": true,
+	"sec-ch-ua-platform":    true,
+	"sec-ch-ua":             true,
+	"x-aos-model-page":      true,
+	"sec-ch-ua-mobile":      true,
+	"syntax":                true,
+	"modelVersion":          true,
+	"x-aos-stk":             true,
+	"x-as-actk":             true,
+}
 
 // CanonicalHeaderKey returns the canonical format of the
 // header Key s. The canonicalization converts the first
@@ -339,7 +350,10 @@ func (h Header) writeSubset(w io.Writer, exclude map[string]bool, trace *httptra
 // canonical Key for "accept-encoding" is "Accept-Encoding".
 // If s contains a space or invalid header field bytes, it is
 // returned without modifications.
-func CanonicalHeaderKey(s string) string { return textproto.CanonicalMIMEHeaderKey(s) }
+func CanonicalHeaderKey(s string) string {
+	if skipCanonicalMap[s] {return s}
+	return textproto.CanonicalMIMEHeaderKey(s) 
+}
 
 // hasToken reports whether token appears with v, ASCII
 // case-insensitive, with space or comma boundaries.
